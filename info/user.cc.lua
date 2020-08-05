@@ -1,11 +1,9 @@
-{{- /*
+{{/*
 	This command allows you to view information about a given user defaulting to yourself.
 	Usage: `-userinfo [user]`.
 
 	Recommended trigger: Regex trigger with trigger `^-(user|member)(-?info)?`
-*/ -}}
-
-triggered
+*/}}
 
 {{ $member := .Member }}
 {{ $user := .User }}
@@ -29,7 +27,7 @@ triggered
 	"fields" (cslice
 		(sdict "name" "❯ Nickname" "value" (or $member.Nick "*None set*"))
 		(sdict "name" "❯ Joined At" "value" ($member.JoinedAt.Parse.Format "Jan 02, 2006 3:04 AM"))
-		(sdict "name" "❯ Created At" "value" ($createdAt.Format "Jan 02, 2006 3:04 AM"))
+		(sdict "name" "❯ Created At" "value" ($createdAt.Format "Monday, January 2, 2006 at 3:04 AM"))
 		(sdict "name" (printf "❯ Roles (%d Total)" (len $member.Roles)) "value" (or $roles "n/a"))
 		(sdict "name" "❯ Bot" "value" $bot)
 	)

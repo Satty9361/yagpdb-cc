@@ -1,14 +1,23 @@
-{{- /*
+{{/*
 	This command is a replica of the deathmatch command from Yggdrasil. Usage: `-deathmatch [user1] [user2]`.
 
 	Recommended trigger: Command trigger with trigger `deathmatch`.
-*/ -}}
+*/}}
 
+{{/* CONFIGURATION VALUES START */}}
+{{/* Slice of random channel IDs in your server to decrease execCC lag */}}
+{{ $channels := cslice
+	670669801596649478
+	671509095433371688
+	677921750566043708
+	678379546218594304
+}}
 {{ $emojis := sdict
-	"UserA" "<:battleForward:675127538095357993>"
-	"UserB" "<:battleBackwards:675127538455937024>"
+	"UserA" "<:battleForward:681735565594460181>"
+	"UserB" "<:battleBackwards:681735538105253901>"
 }}
 {{ $yag := userArg 204255221017214977 }}
+{{/* CONFIGURATION VALUES END */}}
 
 {{ $args := parseArgs 0 "**Syntax:** -deathmatch [user1] [user2]" (carg "userid" "user1") (carg "userid" "user2") }}
 {{ $userA := $yag }}
@@ -83,14 +92,15 @@
 	{{ $data.Set "Embed" $embed }}
 
 	{{ if $target.HP }}
-		{{ execCC $cc nil 2 $data }}
+		{{ execCC $cc (index $channels (randInt (len $channels))) 2 $data }}
 	{{ end }}
 
-	{{ editMessage nil .MsgID (cembed $embed) }}
+	{{ editMessage .ChannelID .MsgID (cembed $embed) }}
+
 {{ else }}
 	{{ $initial := sendMessageRetID nil (cembed $embed) }}
 	{{ sleep 3 }}
-	{{ execCC $cc nil 2 (sdict
+	{{ execCC $cc (index $channels (randInt (len $channels))) 2 (sdict
 		"UserA" (sdict "Name" $userA.Username "HP" 100)
 		"UserB" (sdict "Name" $userB.Username "HP" 100)
 		"Embed" $embed
@@ -98,5 +108,6 @@
 		"Attacker" "UserB"
 		"MsgID" $initial
 		"IsFirst" true
+		"ChannelID" .Channel.ID
 	) }}
 {{ end }}

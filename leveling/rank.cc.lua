@@ -1,16 +1,15 @@
-{{- /*
+{{/*
 	This command manages viewing the rank of a given member.
 	Use by running `-rank [member]` where member is optional. Defaults to yourself.
 	You may also set a color for your rank card using `-rank set-color <hex>` or `-rank set-color default`.
 
 	Recommended trigger: Regex trigger with trigger `^-(rank|lvl|xp)`.
-*/ -}}
+*/}}
 {{/* Instantiate constants */}}
 {{ $barEmpty := "□" }}
 {{ $barFull := "■" }}
 {{ $xp := 0 }} {{/* Xp of user */}}
 {{ $color := 14232643 }} {{/* Embed color */}} 
-{{ with dbGet .User.ID "xpColor" }} {{ $color = .Value }} {{ end }}
 {{ $user := .User }} {{/* Target user */}}
 {{ $colorSet := false }}
 
@@ -18,6 +17,7 @@
 	{{ $temp := userArg (index . 0) }}
 	{{ if $temp }}
 		{{ $user = $temp }}
+		{{ with dbGet $user.ID "xpColor" }} {{ $color = .Value }} {{ end }}
 	{{ else if and (eq (index . 0) "set-color") (ge (len .) 2) }}
 		{{ $colorSet = true }}
 		{{ $multipliers := cslice 1048576 65536 4096 256 16 1 }}
@@ -28,19 +28,21 @@
 				{{ $hex = (printf "%06s" .) | upper }}
 			{{ end }}
 			{{ $dec := 0 }}
-			{{- range $k, $v := split $hex "" -}}
-				{{ $multiplier := index $multipliers $k }}
-				{{ $num := or ($hex2dec.Get $v) $v}}
-				{{ $dec = add $dec (mult $num $multiplier) }}
-			{{- end -}}
+			{{ range $k, $v := split $hex "" -}}
+				{{- $multiplier := index $multipliers $k }}
+				{{- $num := or ($hex2dec.Get $v) $v}}
+				{{- $dec = add $dec (mult $num $multiplier) -}}
+			{{ end }}
 			{{ dbSet $user.ID "xpColor" $dec }}
 			{{ $user.Mention }}, I set your rank card color to `#{{ $hex }}`.
 		{{ else }}
 			Please provide a valid hex to set your rank card color to.
 		{{ end }}
 	{{ end }}
-{{ end }} {{/* If user was provided, use that */}}
+{{ end }}
 {{ if not $colorSet }}
+	{{/* Get the color for this user */}}
+	{{ with dbGet $user.ID "xpColor" }} {{ $color = .Value }} {{ end }}
 	{{ with dbGet $user.ID "xp" }}
 		{{ $xp = .Value }}
 	{{ end }} {{/* If XP is there, use that */}}

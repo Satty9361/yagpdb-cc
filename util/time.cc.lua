@@ -1,9 +1,9 @@
-{{- /*
+{{/*
 	This command gets the time of your city, the weather of your city, and shows it in an embed with a different image / color depending on time.
 	Usage: `-time`.
 
 	Recommended trigger: Command trigger with trigger `time`
-*/ -}}
+*/}}
 
 {{/* CONFIGURATION VALUES START */}}
 {{ $assets := sdict
@@ -24,7 +24,7 @@
 		"color" 1062054
 	)
 }} {{/* Only modify the individual sdicts, you should only be changing the image (url) or color (dec) */}}
-{{ $offset := -8 }} {{/* UTC offset in hours */}}
+{{ $timezone := "America/Vancouver" }} {{/* Avaliable from http://kevalbhatt.github.io/timezone-picker/ (same as setz) */}}
 {{ $name := "Joe" }} {{/* Your name */}}
 {{ $location := "Vancouver" }} {{/* City name */}}
 {{/* CONFIGURATION VALUES END */}}
@@ -36,7 +36,7 @@
 {{ $weather := slice (index $res 3) 15 }}
 {{ $temp := reReplace `\.\.` (reReplace ` \(.+$` (slice (index $res 4) 15) "") " - " }}
 
-{{ $now := currentTime.Add (toDuration (mult $offset .TimeHour)) }}
+{{ $now := currentTime.In (newDate 0 0 0 0 0 0 $timezone).Location }}
 {{ $hr := $now.Hour }}
 {{ if and (ge $hr 5) (lt $hr 12) }} {{ $marker = "morning" }}
 {{ else if and (ge $hr 12) (lt $hr 17) }} {{ $marker = "afternoon" }}
@@ -44,13 +44,8 @@
 {{ end }}
 
 {{ $asset := $assets.Get $marker }}
-{{ $after := "PM" }}
-{{ $formattedHour := sub $hr 12 }}
-{{ if lt $formattedHour 0 }} {{ $formattedHour = $hr }} {{ $after = "AM"}} {{ end }}
-{{ $time := printf "%d:%02d:%02d %s" $formattedHour $now.Minute $now.Second $after }}
-{{ $date := printf "%s, %s %d, %d"
-	$now.Weekday.String $now.Month.String $now.Day $now.Year
-}}
+{{ $time := $now.Format "3:04:05 PM" }}
+{{ $date := $now.Format "Monday, January 2, 2006" }}
 {{ $embed := cembed
 	"title" (printf "Good %s, %s" $marker $name)
 	"color" $asset.color

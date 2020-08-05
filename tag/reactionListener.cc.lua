@@ -1,8 +1,8 @@
-{{- /*
+{{/*
 	This command manages tag list pagination.
 
 	Recommended trigger: Reaction trigger on REACTION ADDED only.
-*/ -}}
+*/}}
 
 {{ $action := .Reaction.Emoji.Name }}
 {{ $validEmojis := cslice "▶️" "◀️" }}
@@ -13,6 +13,7 @@
 	{{ if and (eq $embed.Title "❯ Tags") $embed.Footer }}
 		{{ $page = reFind `\d+` $embed.Footer.Text }}
 		{{ $isValid = true }}
+		{{ deleteMessageReaction nil $.ReactionMessage.ID $.User.ID $action }}
 	{{ end }}
 {{ end }}
 {{ if and (in $validEmojis $action) $isValid $page }}
